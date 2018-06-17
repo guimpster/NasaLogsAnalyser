@@ -1,0 +1,70 @@
+Semantix
+
+
+    Qual​ o objetivo do​ comando​ cache​ em​ Spark?
+        O .cache() ou .persist(MEMORY_ONLY) salvam resultados parciais dos RDD's em memória
+        para que toda vez que um passo intermediário é executado, o spark não precise fazer
+        toda a computação iterativa novamente, somente a partir do ponto onde foi cacheado.
+        Todas as transformações do Spark são lazy, ou seja, o código só é executado quando
+        houver uma ação(reduce por exemplo) ou cache()/persist().
+
+    O​​ mesmo​​ código​​ implementado​​ em​​ Spark​​ é​ normalmente​​ mais​ rápido​​ que​​ a implementação​​ equivalente​​
+    em MapReduce.​ ​Por​​ quê?
+        Porque o MapReduce precisa persistir e ler de discos(HDFS) a cada iteração, enquanto o Spark pode
+        trabalhar os resultados diretamente da memória. Ou seja, Spark é ótimo para algoritmos
+        iterativos que precisam ser rodados várias veres ou para aplicações que precisam fazer
+        streaming de dados várias e várias vezes.
+
+    Qual​ é a função​​ do​ SparkContext​?
+        SparkContext é o conector de um cluster Spark, é usado para criar RDD's, acumuladores
+        e fazer broadcast de variáveis pelo cluster. Só pode existir 1 SparkContext por JVM.
+
+    Explique​ ​com​ ​suas​ palavras​ ​o​ que​ ​é​ Resilient​ Distributed​ ​Datasets​​(RDD).
+        Resilient Distributed Datasets(RDD's) é uma abstração de cada grupo de dados distruido
+        pelo cluster Spark. Cada RDD pode rodar operações em paralelo, criando novos RDD's.
+        Assim, numa operação de leitura, eles são distribuidos nas memórias dos Clusters, realizando
+        a transformação somente quando houver um cache() ou uma action como reduce().
+
+    GroupByKey​ é menos​​ eficiente​​ que​​ reduceByKey​​ em​​ grandes​​ dataset.​ Por​​ quê?
+        Porque o GroupByKey transfere todos os dados que tem a mesma chave para o mesmo nó do cluster,
+        além disso durante essa transferência se houver um grande grupo de (chave,valor), o spark persiste
+        em disco o resultado, deixando todo o processo mais lento ainda.
+
+    Explique​ ​o​ que​ o​ código​ Scala​​ abaixo​​ faz.
+        linha 1: manda o SparkContext abrir um conector para um sistema HDFS(sistema de arquivos compartilhados)
+        linha 2: cria uma coleção com todas as palavras de todas as linhas
+        linha 3: cada palavra será uma tupla (palavra, 1)
+        linha 4: soma chaves iguais
+        linha 5: grava através do SparkContext de volta no HDFS
+
+        Ou seja, a aplicação é um contador de palavras de um arquivo no HDFS
+
+
+Projeto
+    O segundo link para o arquivo da NASA é privado.
+        /media/guilherme/backup/Documentos 2018/Semantix
+
+========RDD Version=======
+
+log_pattern = """^(.*) - - \[(.*)\].*\"(.*) (.*) (.*)\" (\d*) ([-|\d]*)$""".r
+val log_pattern(host, s_collected_at, request, s_http_reply_code, s_reply_bytes) = """link097.txdirect.net - - [01/Jul/1995:00:03:13 -0400] "GET /shuttle/missions/sts-65/mission-sts-65.html HTTP/1.0" 200 130811"""
+
+case class Log(host: String, collected_at: java.util.Date, request: String, http_reply_code: Integer, reply_bytes: Long) {
+    override def toString(): String = "(" + host + ", " + collected_at + ", " + request + ", " + http_reply_code + ", " + reply_bytes + ")";
+}
+
+.withColumn("host", regex_extract($1, LOG_REGEX, 1).show()
+
+val df = new java.text.SimpleDateFormat("dd/MMM/yyyy:HH:mm:ss Z")
+
+to_date("dd/MMM/yyyy:HH:mm:ss Z")
+
+textFile.map(line => line match {
+    case log_pattern(host, s_collected_at, request, s_http_reply_code, s_reply_bytes) =>
+        (host, s_collected_at, request, s_http_reply_code.toInt, s_reply_bytes.toInt)}).toDF().show()
+
+textFile.cache()
+
+val counts = textFile.flatMap(line => line.split(" ")).map(word => (word, 1)).reduceByKey(_ + _).collect()
+
+========DF and SD version=======
