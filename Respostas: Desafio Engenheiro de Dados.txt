@@ -46,12 +46,14 @@ Projeto
 
 ========RDD Version=======
 
-log_pattern = """^(.*) - - \[(.*)\].*\"(.*) (.*) (.*)\" (\d*) ([-|\d]*)$""".r
-val log_pattern(host, s_collected_at, request, s_http_reply_code, s_reply_bytes) = """link097.txdirect.net - - [01/Jul/1995:00:03:13 -0400] "GET /shuttle/missions/sts-65/mission-sts-65.html HTTP/1.0" 200 130811"""
+val log_pattern = """^(.*) - - \[(.*)\].*\"(.*) (.*) *(.*)\" (\d*) ([-|\d]*)$""".r
+val log_pattern(host, s_collected_at, method, url, http_version, s_http_reply_code, s_reply_bytes) = """link097.txdirect.net - - [01/Jul/1995:00:03:13 -0400] "GET /shuttle/missions/sts-65/mission-sts-65.html HTTP/1.0" 200 130811"""
 
-case class Log(host: String, collected_at: java.util.Date, request: String, http_reply_code: Integer, reply_bytes: Long) {
-    override def toString(): String = "(" + host + ", " + collected_at + ", " + request + ", " + http_reply_code + ", " + reply_bytes + ")";
-}
+val textFile = sc.textFile("/media/guilherme/backup/Documentos 2018/Semantix/access_log_Jul95")
+
+textFile.map((line: String) => {
+  val log_pattern(host, s_collected_at, method, url, http_version, s_http_reply_code, s_reply_bytes) = line
+}).collect
 
 .withColumn("host", regex_extract($1, LOG_REGEX, 1).show()
 
@@ -67,4 +69,4 @@ textFile.cache()
 
 val counts = textFile.flatMap(line => line.split(" ")).map(word => (word, 1)).reduceByKey(_ + _).collect()
 
-========DF and SD version=======
+Running: /usr/hdp/current/spark2-client/bin/spark-submit --class "main.scala.Main"  --master local ./sparkTutorialScala-assembly-1.0.jar
