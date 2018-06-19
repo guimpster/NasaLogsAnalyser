@@ -1,3 +1,6 @@
 /metastore_db
 access*
 derby.log
+/target
+.idea
+/project
