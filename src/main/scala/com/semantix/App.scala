@@ -20,7 +20,7 @@ object AppDS extends App {
     val LOG_REGEX = """^(.*) - - \[(.*)\].*\"(.*)\" (\d*) ([-|\d]*)$"""
     val DATE_FORMAT = """dd/MMM/yyyy:HH:mm:ss Z"""
 
-    val logsDF = spark.read.text("/media/guilherme/backup/Documentos 2018/NasaLogsAnalyser/access_log_Jul95").toDF
+    val logsDF = spark.read.text("access_log_Jul95").toDF
 
     val lDs = logsDF.select(regexp_extract($"value", LOG_REGEX, 1) as "host",
       unix_timestamp(regexp_extract($"value", LOG_REGEX, 2), DATE_FORMAT).cast(TimestampType) as "collected_at",
